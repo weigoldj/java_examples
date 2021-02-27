@@ -1,0 +1,48 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+repositories {
+  jcenter()
+
+  flatDir {
+    dirs 'dependencies/lib'
+  }
+}
+
+compileJava {
+    options.compilerArgs << "-Xlint:unchecked"
+    options.debug = "on"
+    options.deprecation = "true"
+}
+
+dependencies {
+    // This dependency is used by the application.
+    implementation 'com.google.guava:guava:18.0'
+    // Use JUnit test framework
+    testImplementation 'junit:junit:4.12'
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = 'hello.App'
+}
+
+distTar {
+    compression = Compression.GZIP
+}
+
+task localContainer(type: Exec) {
+    description = "package the software into docker image"
+    logger.lifecycle("> Task :$name - $description")
+    workingDir '.'
+    commandLine 'docker', 'build', '--pull', '--no-cache', '-t', "$rootProject.name", '.'
+}
+
+task showDependencies {
+    description = "prints the projects dependencies"
+    doLast {
+        sourceSets.main.runtimeClasspath.each { println it }
+    }
+}
